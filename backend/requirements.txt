@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+alembic
+python-jose[cryptography]   # для JWT
+bcrypt==4.0.1
+passlib[bcrypt]             # или passlib[argon2] если хотите argon2
+python-multipart            # если формы multipart
+email-validator             # pydantic/email проверки
+python-dotenv               # удобство локально
