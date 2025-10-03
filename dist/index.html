@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ru" x-data="app()">
+<head>
+  <meta charset="utf-8">
+  <title>TMC Inventory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/alpinejs@3.x.x" defer></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { margin-bottom: 10px; }
+    input, button { margin: 4px; padding: 6px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+    th { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h1>Учёт ТМЦ</h1>
+
+  <div>
+    <label>Логин: <input x-model="username"></label>
+    <label>Пароль: <input type="password" x-model="password"></label>
+    <button @click="login()">Войти</button>
+  </div>
+
+  <template x-if="token">
+    <div>
+      <h2>Список ТМЦ</h2>
+      <button @click="fetchTMC()">Обновить</button>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Наименование</th><th>Серийник</th><th>Бренд</th><th>Статус</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="item in items" :key="item.id">
+            <tr>
+              <td x-text="item.id"></td>
+              <td x-text="item.name"></td>
+              <td x-text="item.serial_number"></td>
+              <td x-text="item.brand"></td>
+              <td x-text="item.status"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </template>
+
+  <script>
+    function app(){
+      return {
+        username: '',
+        password: '',
+        token: null,
+        items: [],
+        async login(){
+          const fd = new URLSearchParams();
+          fd.append('username', this.username);
+          fd.append('password', this.password);
+          try{
+            const res = await fetch('/api/auth/token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              body: fd
+            });
+            const j = await res.json();
+            if(j.access_token){
+              this.token = j.access_token;
+              this.fetchTMC();
+            } else {
+              alert('Ошибка входа');
+            }
+          }catch(e){ alert('Ошибка соединения'); }
+        },
+        async fetchTMC(){
+          if(!this.token) return;
+          const res = await fetch('/api/tmc', {
+            headers: { 'Authorization': 'Bearer ' + this.token }
+          });
+          this.items = await res.json();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+
